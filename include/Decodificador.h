@@ -1,0 +1,4 @@
+#ifndef DECODIFICADOR_H
+#define DECODIFICADOR_H
+
+#endif
