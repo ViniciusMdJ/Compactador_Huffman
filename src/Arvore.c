@@ -11,7 +11,7 @@ struct arvore
     Arv *dir;
 };
 
-//O caminho sairá na ordem inversa na string
+//A altura sempre que for chamada a função tem q ser 0(ZERO)
 char *arvCaminho(Arv *arv, const char c, int altura)
 {
     if (arvVazia(arv))
@@ -29,18 +29,17 @@ char *arvCaminho(Arv *arv, const char c, int altura)
     }
 
     char *aux = NULL;
-
-    aux = arvCaminho(arv->esq, c, altura);
-    if (!aux)
+    aux = arvCaminho(arv->esq, c, altura + 1);
+    if (aux)
     {
-        strcat(aux, "0");
+        aux[altura] = '0';
         return aux;
     }
 
-    aux = arvCaminho(arv->dir, c, altura);
-    if (!aux)
+    aux = arvCaminho(arv->dir, c, altura + 1);
+    if (aux)
     {
-        strcat(aux, "1");
+        aux[altura] = '1';
         return aux;
     }
 
@@ -59,18 +58,33 @@ Arv *arvCria(char c, int peso, Arv *esq, Arv *dir)
     return arv;
 }
 
-Arv *arvLibera(Arv *arv)
+void arvLibera(void *x)
 {
+    Arv* arv = (Arv*) x;
     if (!arvVazia(arv))
     {
         arvLibera(arv->esq);
         arvLibera(arv->dir);
         free(arv);
     }
-    return NULL;
 }
 
 int arvVazia(Arv *arv)
 {
     return arv ? 0 : 1;
+}
+
+int arvAltura(Arv* a)
+{
+    if(!arvVazia(a)){
+        int qtdD, qtdE;
+        qtdD = arvAltura(a->dir);
+        qtdE = arvAltura(a->esq);
+        return (qtdD > qtdE) ? (qtdD + 1) : (qtdE + 1);
+    }
+    return 0;
+}
+
+tList* arvInitList(){
+    return NewList(sizeof(Arv), arvLibera);
 }

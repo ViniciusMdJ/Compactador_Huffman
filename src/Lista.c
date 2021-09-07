@@ -97,6 +97,42 @@ void addEnd(tList *list, void *data)
     list->last = newData;
 }
 
+void AddOrdered(tList* list, void *data, fptrCompare function){
+    Check(list);
+
+    tListNode *newData = malloc(sizeof(tListNode));
+    Check(newData);
+
+    newData->info = malloc(list->DataSize);
+    memcpy(newData->info, data, list->DataSize);
+
+    tListNode* p;
+    for(p = list->first; p != NULL; p = p->next){
+        if(function(p->info, data)){
+            break;
+        }
+    }
+
+    if(!list->first){
+        list->first = newData;
+    }
+
+    if(p){
+        newData->next = p;
+        newData->prev = p->prev;
+        p->prev->next = newData;
+        p->prev = newData;
+    }
+    else{
+        if (list->last){
+            list->last->next = newData;
+        }
+        newData->prev = list->last;
+        list->last = newData;
+        newData->next = NULL;
+    }
+}
+
 void RemoveBase(tList *list)
 {
     Check(list);
