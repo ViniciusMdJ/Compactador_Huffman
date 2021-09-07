@@ -97,7 +97,8 @@ void addEnd(tList *list, void *data)
     list->last = newData;
 }
 
-void AddOrdered(tList* list, void *data, fptrCompare function){
+void AddOrdered(tList *list, void *data, fptrCompare function)
+{
     Check(list);
 
     tListNode *newData = malloc(sizeof(tListNode));
@@ -106,25 +107,38 @@ void AddOrdered(tList* list, void *data, fptrCompare function){
     newData->info = malloc(list->DataSize);
     memcpy(newData->info, data, list->DataSize);
 
-    tListNode* p;
-    for(p = list->first; p != NULL; p = p->next){
-        if(function(p->info, data)){
+    tListNode *p;
+    for (p = list->first; p != NULL; p = p->next)
+    {
+        if (function(p->info, data))
+        {
             break;
         }
     }
 
-    if(!list->first){
+    if (!list->first)
+    {
         list->first = newData;
     }
 
-    if(p){
+    if (p)
+    {
         newData->next = p;
         newData->prev = p->prev;
-        p->prev->next = newData;
+        if (p->prev)
+        {
+            p->prev->next = newData;
+        }
+        else
+        {
+            list->first = newData;
+        }
         p->prev = newData;
     }
-    else{
-        if (list->last){
+    else
+    {
+        if (list->last)
+        {
             list->last->next = newData;
         }
         newData->prev = list->last;
@@ -239,8 +253,8 @@ void genericFunctionList(tList *list, fptrGeneric genericFunction)
     }
 }
 
-
-void genericFunction2List(tList *list, void *data, fptrGeneric2 genericFunction){
+void genericFunction2List(tList *list, void *data, fptrGeneric2 genericFunction)
+{
     if (!genericFunction)
     {
         printf("Funcao nao indicada\n");
@@ -256,7 +270,8 @@ void genericFunction2List(tList *list, void *data, fptrGeneric2 genericFunction)
     }
 }
 
-int Counter(tList *list, void *find, fptrCompare function){
+int Counter(tList *list, void *find, fptrCompare function)
+{
     if (!function)
     {
         printf("Funcao nao indicada\n");
@@ -274,7 +289,6 @@ int Counter(tList *list, void *find, fptrCompare function){
 
     return qtd;
 }
-
 
 void *SearchList(tList *list, void *find, fptrCompare function)
 {

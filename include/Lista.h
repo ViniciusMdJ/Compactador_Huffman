@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 /**
  * @brief TAD de Lista generica.
 */
@@ -151,5 +150,7 @@ void *SearchRemoveList(tList *list, void *find, fptrCompare function);
  * @post Se o ponteiro for NULL interrompe o programa com exit().
 */
 void Check(void *x);
+
+void AddOrdered(tList *list, void *data, fptrCompare function);
 
 #endif //LISTA_H

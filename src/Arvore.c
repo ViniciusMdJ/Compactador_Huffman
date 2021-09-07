@@ -22,7 +22,7 @@ char *arvCaminho(Arv *arv, const char c, int altura)
         if (arv->c == c)
         {
             char *string = (char *)malloc(sizeof(char) * (altura + 1));
-            string[0] = '\0';
+            string[altura] = '\0';
             return string;
         }
         return NULL;
@@ -60,7 +60,7 @@ Arv *arvCria(char c, int peso, Arv *esq, Arv *dir)
 
 void arvLibera(void *x)
 {
-    Arv* arv = (Arv*) x;
+    Arv *arv = (Arv *)x;
     if (!arvVazia(arv))
     {
         arvLibera(arv->esq);
@@ -74,9 +74,10 @@ int arvVazia(Arv *arv)
     return arv ? 0 : 1;
 }
 
-int arvAltura(Arv* a)
+int arvAltura(Arv *a)
 {
-    if(!arvVazia(a)){
+    if (!arvVazia(a))
+    {
         int qtdD, qtdE;
         qtdD = arvAltura(a->dir);
         qtdE = arvAltura(a->esq);
@@ -85,6 +86,65 @@ int arvAltura(Arv* a)
     return 0;
 }
 
-tList* arvInitList(){
+tList *arvInitList()
+{
     return NewList(sizeof(Arv), arvLibera);
+}
+
+int arvCompara(void *x, void *y)
+{
+    Arv *arv1 = (Arv *)x;
+    Arv *arv2 = (Arv *)y;
+
+    if (arv2->peso < arv1->peso)
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+void arvImprime(void *a)
+{
+    Arv *arv = (Arv *)a;
+    //printf("<");
+    static int i = 0;
+
+    if (!arvVazia(arv))
+    {
+        if (arv->esq == NULL && arv->dir == NULL)
+        {
+            i++;
+            //printf("%c i:%d", arv->c, i);
+            printf("1%c", arv->c);
+        }
+        else
+        {
+            printf("0");
+        }
+        arvImprime(arv->esq);
+        arvImprime(arv->dir);
+    }
+
+    //printf(">");
+}
+
+int arvSomaPesos(Arv *arv1, Arv *arv2)
+{
+    return arv1->peso + arv2->peso;
+}
+
+int arvQtdBits(Arv *arv)
+{
+    if (!arvVazia(arv))
+    {
+        if (arvVazia(arv->esq) && arvVazia(arv->dir))
+        {
+            return 9;
+        }
+        return arvQtdBits(arv->esq) + arvQtdBits(arv->dir) + 1;
+    }
+    return 0;
 }

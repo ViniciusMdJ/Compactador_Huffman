@@ -12,10 +12,18 @@ Arv *arvCria(char c, int peso, Arv *esq, Arv *dir);
 
 void arvLibera(void *arv);
 
-int arvAltura(Arv* a);
+int arvAltura(Arv *a);
 
 int arvVazia(Arv *arv);
 
-tList* arvInitList();
+tList *arvInitList();
+
+int arvCompara(void *x, void *y);
+
+void arvImprime(void *arv);
+
+int arvSomaPesos(Arv *arv1, Arv *arv2);
+
+int arvQtdBits(Arv *arv);
 
 #endif
