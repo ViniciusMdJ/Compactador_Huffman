@@ -5,20 +5,27 @@
 
 #define getBit(valor, bit) (valor & (0x01 << bit))
 
-int main(int argc,char** argv)
+int main(int argc, char **argv)
 {
-    if(argc < 3){
+    if (argc < 3)
+    {
         printf("Parametros insuficientes\n");
         exit(1);
     }
     //Compacta
-    if(strcmp(argv[1], "Compacta") == 0){
+    else if (strcmp(argv[1], "Compacta") == 0)
+    {
         Compacta(argv[2]);
     }
     //Descompacta
-    if(strcmp(argv[1], "Descompacta") == 0){
+    else if (strcmp(argv[1], "Descompacta") == 0)
+    {
         //chama descompacta
     }
+    else
+    {
+        printf("Parametro errado, insira Compacta ou Descompacta\n");
+    }
 
-return 0;
+    return 0;
 }

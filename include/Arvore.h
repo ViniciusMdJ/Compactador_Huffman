@@ -2,6 +2,7 @@
 #define ARVORE_H
 
 #include "../include/Lista.h"
+#include "../include/bitmap.h"
 
 typedef struct arvore Arv;
 
@@ -25,5 +26,7 @@ void arvImprime(void *arv);
 int arvSomaPesos(Arv *arv1, Arv *arv2);
 
 int arvQtdBits(Arv *arv);
+
+void arvSerializa(bitmap *bm, Arv *arv);
 
 #endif

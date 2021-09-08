@@ -3,29 +3,92 @@
 #include <string.h>
 #include "../include/Codificador.h"
 #include "../include/Lista.h"
+#include "../include/bitmap.h"
+
+typedef struct codificador Cod;
+
+struct codificador
+{
+    int *pesos;
+    char **caminhos;
+    char parada;
+    Arv *arvore;
+    bitmap *mapa;
+};
+
+void destroyCod(Cod *dados)
+{
+    if (dados)
+    {
+        if (dados->pesos)
+            free(dados->pesos);
+        if (dados->caminhos)
+        {
+            for (int i = 0; i < 256; i++)
+            {
+                if (dados->caminhos[i])
+                {
+                    free(dados->caminhos[i]);
+                }
+            }
+            free(dados->caminhos);
+        }
+        arvLibera(dados->arvore);
+        if (dados->mapa)
+        {
+            bitmapLibera(dados->mapa);
+        }
+        free(dados);
+    }
+}
+
+int tamBitsArquivo(Cod *dados)
+{
+    int tam = 0, i;
+    for (i = 0; i < 256; i++)
+    {
+        if (dados->pesos[i] > 0)
+        {
+            tam += strlen(dados->caminhos[i]) * dados->pesos[i];
+        }
+    }
+    //soma 8 para o byte de parada depois da serialização da arvore
+    tam += arvQtdBits(dados->arvore) + 8;
+
+    return tam;
+}
 
 void Compacta(char *nomeArq)
 {
-    int *pesos = DefinePesos(nomeArq);
-    char parada = IndiceParada(pesos);
+    Cod *dados = malloc(sizeof(Cod));
 
-    tList *listaArv = ListaArvores(pesos);
+    dados->pesos = DefinePesos(nomeArq);
+    dados->parada = IndiceParada(dados->pesos);
 
-    Arv *arvore = AlgoritimoHuffman(listaArv);
-    //arvImprime(arvore);
-    printf("tam bits arv: %d\n", arvQtdBits(arvore));
+    tList *listaArv = ListaArvores(dados->pesos);
 
-    char **caminhos = DefineCaminhos(arvore, pesos);
+    dados->arvore = AlgoritimoHuffman(listaArv);
+    DestroyList(listaArv);
 
-    /*for (int i = 0; i < 256; i++)
+    DefineCaminhos(dados);
+    //printf("%d %u\n", dados->pesos[EOF], EOF);
+
+    printf("tam bits arq: %d\n", tamBitsArquivo(dados));
+
+    dados->mapa = bitmapInit(tamBitsArquivo(dados));
+
+    EscreveCompactado(dados, nomeArq);
+
+    printf("tamMax: %d, usado: %d\n", bitmapGetMaxSize(dados->mapa), bitmapGetLength(dados->mapa));
+
+    /*printf("bitmap: ");
+    char *mapa = bitmapGetContents(dados->mapa);
+    for (int i = 0; i < (bitmapGetLength(dados->mapa) + 7) / 8; i++)
     {
-        if (caminhos[i])
-        {
-            printf("%c %d %s\n", i, pesos[i], caminhos[i]);
-        }
+        printf("%c", mapa[i]);
     }*/
 
-    free(pesos);
+    destroyCod(dados);
 }
 
 int *DefinePesos(char *nomeArq)
@@ -108,21 +171,57 @@ char IndiceParada(int *pesos)
     return -1;
 }
 
-char **DefineCaminhos(Arv *arv, int *pesos)
+void DefineCaminhos(Cod *dados)
 {
-    char **Caminhos = malloc(sizeof(char *) * 256);
+    dados->caminhos = malloc(sizeof(char *) * 256);
 
     for (int i = 0; i < 256; i++)
     {
-        if (pesos[i] > 0)
+        if (dados->pesos[i] > 0)
         {
-            Caminhos[i] = arvCaminho(arv, i, 0);
+            dados->caminhos[i] = arvCaminho(dados->arvore, i, 0);
         }
         else
         {
-            Caminhos[i] = NULL;
+            dados->caminhos[i] = NULL;
         }
     }
+}
 
-    return Caminhos;
+void setCaminhoMapa(Cod *dados, int byte)
+{
+    if (dados->caminhos[byte] == NULL)
+    {
+        printf("nao tem caminho para o byte %c\n", byte);
+        return;
+    }
+    char *caminho = dados->caminhos[byte];
+    for (int i = 0; caminho[i] != '\0'; i++)
+    {
+        bitmapAppendLeastSignificantBit(dados->mapa, caminho[i]);
+    }
+}
+
+void EscreveCompactado(Cod *dados, char *nomeArq)
+{
+    FILE *arq = fopen(nomeArq, "rb");
+    if (!arq)
+    {
+        printf("Arquivo %s não aberto\n", nomeArq);
+        exit(1);
+    }
+
+    arvSerializa(dados->mapa, dados->arvore);
+    for (int i = 7; i >= 0; i--)
+        bitmapAppendLeastSignificantBit(dados->mapa, (dados->parada >> i));
+
+    char byte;
+    while (fread(&byte, 1, 1, arq) >= 1)
+    {
+        setCaminhoMapa(dados, byte);
+    }
+
+    setCaminhoMapa(dados, dados->parada);
+
+    fclose(arq);
 }

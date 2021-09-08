@@ -1,4 +1,5 @@
 #include "../include/Arvore.h"
+#include "../include/Codificador.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -129,6 +130,26 @@ void arvImprime(void *a)
     }
 
     //printf(">");
+}
+
+void arvSerializa(bitmap *bm, Arv *arv)
+{
+    if (!arvVazia(arv))
+    {
+        if (arv->esq == NULL && arv->dir == NULL)
+        {
+            bitmapAppendLeastSignificantBit(bm, '1');
+            //padrao de bits do byte na folha
+            for (int i = 7; i >= 0; i--)
+                bitmapAppendLeastSignificantBit(bm, (arv->c >> i));
+        }
+        else
+        {
+            bitmapAppendLeastSignificantBit(bm, '0');
+        }
+        arvSerializa(bm, arv->esq);
+        arvSerializa(bm, arv->dir);
+    }
 }
 
 int arvSomaPesos(Arv *arv1, Arv *arv2)
