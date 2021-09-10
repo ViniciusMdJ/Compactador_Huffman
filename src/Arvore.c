@@ -1,5 +1,6 @@
 #include "../include/Arvore.h"
 #include "../include/Codificador.h"
+#include "../include/DecodificadorUtils.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,6 +12,25 @@ struct arvore
     Arv *esq;
     Arv *dir;
 };
+
+char arvGetChar(Arv *arv, BitComp *bc)
+{
+    if (!arvVazia(arv))
+    {
+        if (arvVazia(arv->esq) && arvVazia(arv->dir))
+        {
+            return arv->c;
+        }
+        if (getBitArq(bc))
+        {
+            return arvGetChar(arv->dir, bc);
+        }
+        else
+        {
+            return arvGetChar(arv->esq, bc);
+        }
+    }
+}
 
 //A altura sempre que for chamada a função tem q ser 0(ZERO)
 char *arvCaminho(Arv *arv, const char c, int altura)
@@ -150,6 +170,24 @@ void arvSerializa(bitmap *bm, Arv *arv)
         arvSerializa(bm, arv->esq);
         arvSerializa(bm, arv->dir);
     }
+}
+
+Arv *arvDesserializa(BitComp *bc)
+{
+    Arv *new = malloc(sizeof(Arv));
+
+    if (getBitArq(bc))
+    {
+        new->esq = NULL;
+        new->dir = NULL;
+        new->c = getByteArq(bc);
+    }
+    else
+    {
+        new->esq = arvDesserializa(bc);
+        new->dir = arvDesserializa(bc);
+    }
+    return new;
 }
 
 int arvSomaPesos(Arv *arv1, Arv *arv2)

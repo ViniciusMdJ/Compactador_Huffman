@@ -2,4 +2,5 @@
 *.vscode
 *.o
 tp2
-*.csv
+data
+*.comp

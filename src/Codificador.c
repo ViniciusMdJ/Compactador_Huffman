@@ -5,8 +5,6 @@
 #include "../include/Lista.h"
 #include "../include/bitmap.h"
 
-typedef struct codificador Cod;
-
 struct codificador
 {
     int *pesos;
@@ -71,22 +69,20 @@ void Compacta(char *nomeArq)
     DestroyList(listaArv);
 
     DefineCaminhos(dados);
-    //printf("%d %u\n", dados->pesos[EOF], EOF);
+    /*for (int i = 0; i < 256; i++)
+    {
+        printf("byte %u: %d tam: %ld\n", i, dados->pesos[i], strlen(dados->caminhos[i]));
+    }*/
 
     printf("tam bits arq: %d\n", tamBitsArquivo(dados));
 
     dados->mapa = bitmapInit(tamBitsArquivo(dados));
 
+    EscreveBitmapCompactado(dados, nomeArq);
+
     EscreveCompactado(dados, nomeArq);
 
     printf("tamMax: %d, usado: %d\n", bitmapGetMaxSize(dados->mapa), bitmapGetLength(dados->mapa));
-
-    /*printf("bitmap: ");
-    char *mapa = bitmapGetContents(dados->mapa);
-    for (int i = 0; i < (bitmapGetLength(dados->mapa) + 7) / 8; i++)
-    {
-        printf("%c", mapa[i]);
-    }*/
 
     destroyCod(dados);
 }
@@ -108,9 +104,12 @@ int *DefinePesos(char *nomeArq)
         pesos[i] = 0;
     }
 
+    int aux;
     while (fread(&byte, 1, 1, arq) >= 1)
     {
-        pesos[byte]++;
+        aux = byte & 0xff;
+        //printf("byte: %u\n", aux);
+        pesos[aux]++;
     }
 
     fclose(arq);
@@ -130,7 +129,6 @@ tList *ListaArvores(int *pesos)
         {
             Arv *arvore = arvCria(i, pesos[i], NULL, NULL);
             AddOrdered(listaArv, arvore, arvCompara);
-            //printf("adicionado %c\n", i);
             free(arvore);
         }
     }
@@ -202,7 +200,7 @@ void setCaminhoMapa(Cod *dados, int byte)
     }
 }
 
-void EscreveCompactado(Cod *dados, char *nomeArq)
+void EscreveBitmapCompactado(Cod *dados, char *nomeArq)
 {
     FILE *arq = fopen(nomeArq, "rb");
     if (!arq)
@@ -216,12 +214,36 @@ void EscreveCompactado(Cod *dados, char *nomeArq)
         bitmapAppendLeastSignificantBit(dados->mapa, (dados->parada >> i));
 
     char byte;
+    int aux;
     while (fread(&byte, 1, 1, arq) >= 1)
     {
-        setCaminhoMapa(dados, byte);
+        aux = byte & 0xff;
+        setCaminhoMapa(dados, aux);
     }
 
-    setCaminhoMapa(dados, dados->parada);
+    printf("passou aqui\n");
+    aux = dados->parada & 0xff;
+    setCaminhoMapa(dados, aux);
 
     fclose(arq);
+}
+
+void EscreveCompactado(Cod *dados, char *nomeArq)
+{
+    char *compactado = malloc(sizeof(char) * (strlen(nomeArq) + 6));
+    //copia o nome do arquivo e concatena o .comp
+    strcpy(compactado, nomeArq);
+    strcat(compactado, ".comp");
+    FILE *arq = fopen(compactado, "wb");
+    if (!arq)
+    {
+        printf("Arquivo %s nao aberto\n", compactado);
+        exit(1);
+    }
+    //pega o tamanho em bytes do bitmap
+    int tam = (bitmapGetLength(dados->mapa) + 7) / 8;
+    fwrite(bitmapGetContents(dados->mapa), 1, tam, arq);
+
+    fclose(arq);
+    free(compactado);
 }

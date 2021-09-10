@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../include/Codificador.h"
+#include "../include/Decodificador.h"
 
 #define getBit(valor, bit) (valor & (0x01 << bit))
 
@@ -20,7 +21,7 @@ int main(int argc, char **argv)
     //Descompacta
     else if (strcmp(argv[1], "Descompacta") == 0)
     {
-        //chama descompacta
+        Descompacta(argv[2]);
     }
     else
     {

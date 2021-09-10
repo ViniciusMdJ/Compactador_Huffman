@@ -24,6 +24,8 @@ static int tamBitsArquivo(Cod *dados);
 
 static void setCaminhoMapa(Cod *dados, int byte);
 
+static void EscreveBitmapCompactado(Cod *dados, char *nomeArq);
+
 static void EscreveCompactado(Cod *dados, char *nomeArq);
 
 #endif

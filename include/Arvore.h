@@ -3,8 +3,11 @@
 
 #include "../include/Lista.h"
 #include "../include/bitmap.h"
+#include "../include/DecodificadorUtils.h"
 
 typedef struct arvore Arv;
+
+char arvGetChar(Arv *arv, BitComp *bc);
 
 //A altura sempre que for chamada a função tem q ser 0(ZERO)
 char *arvCaminho(Arv *arv, const char c, int altura);
@@ -28,5 +31,7 @@ int arvSomaPesos(Arv *arv1, Arv *arv2);
 int arvQtdBits(Arv *arv);
 
 void arvSerializa(bitmap *bm, Arv *arv);
+
+Arv *arvDesserializa(BitComp *bc);
 
 #endif
