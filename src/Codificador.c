@@ -5,11 +5,13 @@
 #include "../include/Lista.h"
 #include "../include/bitmap.h"
 
+#define MEGABYTE 1048576
+
 struct codificador
 {
     int *pesos;
     char **caminhos;
-    char parada;
+    unsigned int qtdBytes;
     Arv *arvore;
     bitmap *mapa;
 };
@@ -42,7 +44,7 @@ void destroyCod(Cod *dados)
 
 int tamBitsArquivo(Cod *dados)
 {
-    int tam = 0, i;
+    unsigned int tam = 0, i;
     for (i = 0; i < 256; i++)
     {
         if (dados->pesos[i] > 0)
@@ -50,8 +52,9 @@ int tamBitsArquivo(Cod *dados)
             tam += strlen(dados->caminhos[i]) * dados->pesos[i];
         }
     }
-    //soma 8 para o byte de parada depois da serialização da arvore
-    tam += arvQtdBits(dados->arvore) + 8;
+    //soma 32 para o saber a quantidade de bytes do arquivo
+    //depois da serialização da arvore
+    tam += arvQtdBits(dados->arvore) + 32;
 
     return tam;
 }
@@ -60,8 +63,7 @@ void Compacta(char *nomeArq)
 {
     Cod *dados = malloc(sizeof(Cod));
 
-    dados->pesos = DefinePesos(nomeArq);
-    dados->parada = IndiceParada(dados->pesos);
+    DefinePesos(nomeArq, dados);
 
     tList *listaArv = ListaArvores(dados->pesos);
 
@@ -69,25 +71,30 @@ void Compacta(char *nomeArq)
     DestroyList(listaArv);
 
     DefineCaminhos(dados);
-    /*for (int i = 0; i < 256; i++)
-    {
-        printf("byte %u: %d tam: %ld\n", i, dados->pesos[i], strlen(dados->caminhos[i]));
-    }*/
+    // int j = 0;
+    // for (int i = 0; i < 256; i++)
+    // {
+    //     if(dados->pesos[i] > 0){
+    //         printf("byte %d: %d tam: %ld\n", i, dados->pesos[i], strlen(dados->caminhos[i]));
+    //         j += dados->pesos[i];
+    //     }
+    // }
+    // printf("total: %d bin %x\n",j, j);
 
     printf("tam bits arq: %d\n", tamBitsArquivo(dados));
 
-    dados->mapa = bitmapInit(tamBitsArquivo(dados));
+    //dados->mapa = bitmapInit(tamBitsArquivo(dados));
 
-    EscreveBitmapCompactado(dados, nomeArq);
+    //EscreveBitmapCompactado(dados, nomeArq);
 
     EscreveCompactado(dados, nomeArq);
 
-    printf("tamMax: %d, usado: %d\n", bitmapGetMaxSize(dados->mapa), bitmapGetLength(dados->mapa));
+    //printf("tamMax: %d, usado: %d\n", bitmapGetMaxSize(dados->mapa), bitmapGetLength(dados->mapa));
 
     destroyCod(dados);
 }
 
-int *DefinePesos(char *nomeArq)
+void DefinePesos(char *nomeArq, Cod *dados)
 {
     FILE *arq = fopen(nomeArq, "rb");
     if (!arq)
@@ -96,24 +103,19 @@ int *DefinePesos(char *nomeArq)
         exit(1);
     }
 
-    int *pesos = malloc(sizeof(int) * 256);
-    char byte;
+    dados->pesos = calloc(sizeof(int), 256);
+    unsigned char byte;
+    unsigned int aux = 0;
 
-    for (int i = 0; i < 256; i++)
-    {
-        pesos[i] = 0;
-    }
-
-    int aux;
     while (fread(&byte, 1, 1, arq) >= 1)
     {
-        aux = byte & 0xff;
         //printf("byte: %u\n", aux);
-        pesos[aux]++;
+        dados->pesos[byte]++;
+        aux++;
     }
+    dados->qtdBytes = aux;
 
     fclose(arq);
-    return pesos;
 }
 
 tList *ListaArvores(int *pesos)
@@ -154,19 +156,6 @@ Arv *AlgoritimoHuffman(tList *listaArv)
     }
 
     return arv1;
-}
-
-char IndiceParada(int *pesos)
-{
-    for (int i = 0; i < 256; i++)
-    {
-        if (pesos[i] == 0)
-        {
-            pesos[i]++;
-            return i;
-        }
-    }
-    return -1;
 }
 
 void DefineCaminhos(Cod *dados)
@@ -210,25 +199,18 @@ void EscreveBitmapCompactado(Cod *dados, char *nomeArq)
     }
 
     arvSerializa(dados->mapa, dados->arvore);
-    for (int i = 7; i >= 0; i--)
-        bitmapAppendLeastSignificantBit(dados->mapa, (dados->parada >> i));
+    //colocar o qtdbytes
 
-    char byte;
-    int aux;
+    unsigned char byte;
     while (fread(&byte, 1, 1, arq) >= 1)
     {
-        aux = byte & 0xff;
-        setCaminhoMapa(dados, aux);
+        setCaminhoMapa(dados, byte);
     }
-
-    printf("passou aqui\n");
-    aux = dados->parada & 0xff;
-    setCaminhoMapa(dados, aux);
 
     fclose(arq);
 }
 
-void EscreveCompactado(Cod *dados, char *nomeArq)
+void EscreveCompactadoarq(Cod *dados, char *nomeArq)
 {
     char *compactado = malloc(sizeof(char) * (strlen(nomeArq) + 6));
     //copia o nome do arquivo e concatena o .comp
@@ -246,4 +228,78 @@ void EscreveCompactado(Cod *dados, char *nomeArq)
 
     fclose(arq);
     free(compactado);
+}
+
+void EscreveCompactado(Cod *dados, char *nomeArq){
+    char *compactado = malloc(sizeof(char) * (strlen(nomeArq) + 6));
+    //copia o nome do arquivo e concatena o .comp
+    strcpy(compactado, nomeArq);
+    strcat(compactado, ".comp");
+    FILE *arqComp = fopen(compactado, "wb");
+    if (!arqComp)
+    {
+        printf("Arquivo %s nao aberto\n", compactado);
+        exit(1);
+    }
+
+    FILE *arqOrig = fopen(nomeArq, "rb");
+    if (!arqOrig)
+    {
+        printf("Arquivo %s não aberto\n", nomeArq);
+        exit(1);
+    }
+
+    unsigned int tamBitsTotal = tamBitsArquivo(dados); 
+    unsigned int tamBytesTotal = (tamBitsTotal + 7) / 8;
+    //1.048.576 = 1 megabytes
+    //8.388.608 = bits em 1 megabytes
+    int i;
+    dados->mapa = bitmapInit(MEGABYTE << 3);
+    arvSerializa(dados->mapa, dados->arvore);
+    for(i = 31; i >= 0; i--){
+        bitmapAppendLeastSignificantBit(dados->mapa, dados->qtdBytes >> i);
+    }
+
+    char *caminhoAtual;
+    int tamCaminho = 0, bitcaminho = 0;
+
+    do{
+        int qtdBits; //quantidade de bits para escrever
+        if(tamBytesTotal > MEGABYTE){
+            qtdBits = MEGABYTE << 3;
+        }
+        else{
+            qtdBits = tamBitsTotal;
+        }
+
+        if(!dados->mapa){
+            dados->mapa = bitmapInit(qtdBits);
+        }
+
+        unsigned char byte;
+
+
+        for(i = bitmapGetLength(dados->mapa); i < qtdBits; i++){
+            if(tamCaminho == bitcaminho){
+                fread(&byte, 1, 1, arqOrig);
+                caminhoAtual = dados->caminhos[byte];
+                tamCaminho = strlen(caminhoAtual);
+                bitcaminho = 0;
+            }
+            bitmapAppendLeastSignificantBit(dados->mapa, caminhoAtual[bitcaminho]);
+            bitcaminho++;
+        }
+
+        fwrite(bitmapGetContents(dados->mapa), 1, (bitmapGetLength(dados->mapa)+7) >> 3, arqComp);
+
+        tamBytesTotal -= qtdBits >> 3;
+        tamBitsTotal -= qtdBits;
+        bitmapLibera(dados->mapa);
+        dados->mapa = NULL;
+    }while(tamBitsTotal > 0);
+    
+//como vai saber qual proximo bit tem q ser colocado no bitmap caso o caminho pare no meio
+
+    fclose(arqComp);
+    fclose(arqOrig);
 }

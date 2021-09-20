@@ -5,7 +5,7 @@ typedef struct bitComp BitComp;
 
 BitComp *InitBitComp(char *nomeArq);
 
-char getByteArq(BitComp *x);
+unsigned char getByteArq(BitComp *x);
 
 int getBitArq(BitComp *x);
 

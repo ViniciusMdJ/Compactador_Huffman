@@ -27,7 +27,7 @@ BitComp *InitBitComp(char *nomeArq)
     return bc;
 }
 
-char getByteArq(BitComp *bc)
+unsigned char getByteArq(BitComp *bc)
 {
     char byte = 0;
     for (int i = 0; i < 8; i++)

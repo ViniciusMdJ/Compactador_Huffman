@@ -10,7 +10,7 @@ struct decodificador
     BitComp *bc;
     Arv *arv;
     FILE *desc;
-    char parada;
+    unsigned int qtd;
 };
 
 void Descompacta(char *nomeArq)
@@ -19,10 +19,18 @@ void Descompacta(char *nomeArq)
     dados->bc = InitBitComp(nomeArq);
     dados->arv = arvDesserializa(dados->bc);
     //arvImprime(dados->arv);
-    dados->parada = getByteArq(dados->bc);
+    dados->qtd = 0;
+    for(int i = 0; i < 4; i++){
+        dados->qtd <<= 8;
+        dados->qtd += getByteArq(dados->bc);
+    }
     //retira o ".comp" do nome do arquivo
     nomeArq[strlen(nomeArq) - 5] = '\0';
     dados->desc = fopen(nomeArq, "wb");
+    if(!dados->desc){
+        printf("Arquivo %s não aberto\n", nomeArq);
+        exit(1);
+    }
     Decodifica(dados);
     destroyDec(dados);
 }
@@ -30,17 +38,10 @@ void Descompacta(char *nomeArq)
 void Decodifica(Dec *dados)
 {
     char byte;
-    while (1)
+    for(int i = 0; i < dados->qtd; i++)
     {
         byte = arvGetChar(dados->arv, dados->bc);
-        if (byte == dados->parada)
-        {
-            break;
-        }
-        else
-        {
-            fwrite(&byte, 1, 1, dados->desc);
-        }
+        fwrite(&byte, 1, 1, dados->desc);
     }
 }
 

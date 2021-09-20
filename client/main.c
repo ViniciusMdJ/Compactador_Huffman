@@ -14,12 +14,12 @@ int main(int argc, char **argv)
         exit(1);
     }
     //Compacta
-    else if (strcmp(argv[1], "Compacta") == 0)
+    else if (strcasecmp(argv[1], "Compacta") == 0)
     {
         Compacta(argv[2]);
     }
     //Descompacta
-    else if (strcmp(argv[1], "Descompacta") == 0)
+    else if (strcasecmp(argv[1], "Descompacta") == 0)
     {
         Descompacta(argv[2]);
     }

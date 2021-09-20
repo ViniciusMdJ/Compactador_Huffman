@@ -8,13 +8,11 @@ typedef struct codificador Cod;
 
 void Compacta(char *nomeArq);
 
-static int *DefinePesos(char *nomeArq);
+static void DefinePesos(char *nomeArq, Cod *dados);
 
 static tList *ListaArvores(int *pesos);
 
 static Arv *AlgoritimoHuffman(tList *listaArv);
-
-static char IndiceParada(int *pesos);
 
 static void DefineCaminhos(Cod *dados);
 
