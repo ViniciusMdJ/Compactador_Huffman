@@ -297,9 +297,9 @@ void EscreveCompactado(Cod *dados, char *nomeArq){
         bitmapLibera(dados->mapa);
         dados->mapa = NULL;
     }while(tamBitsTotal > 0);
-    
-//como vai saber qual proximo bit tem q ser colocado no bitmap caso o caminho pare no meio
 
+
+    free(compactado);
     fclose(arqComp);
     fclose(arqOrig);
 }
