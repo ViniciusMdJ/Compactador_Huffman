@@ -7,10 +7,10 @@
 
 struct decodificador
 {
-    BitComp *bc;
-    Arv *arv;
-    FILE *desc;
-    unsigned int qtd;
+    BitComp *bc;      // Ponteiro para a estrutura auxiliar BitComp.
+    Arv *arv;         // Ponteiro para a árvore binária dos bytes.
+    FILE *desc;       // Ponteiro para o arquivo a ser escrito.
+    unsigned int qtd; // Quantidade de bytes à ser escrita.
 };
 
 void Descompacta(char *nomeArq)
@@ -20,14 +20,16 @@ void Descompacta(char *nomeArq)
     dados->arv = arvDesserializa(dados->bc);
     //arvImprime(dados->arv);
     dados->qtd = 0;
-    for(int i = 0; i < 4; i++){
+    for (int i = 0; i < 4; i++)
+    {
         dados->qtd <<= 8;
         dados->qtd += getByteArq(dados->bc);
     }
     //retira o ".comp" do nome do arquivo
     nomeArq[strlen(nomeArq) - 5] = '\0';
     dados->desc = fopen(nomeArq, "wb");
-    if(!dados->desc){
+    if (!dados->desc)
+    {
         printf("Arquivo %s não aberto\n", nomeArq);
         exit(1);
     }
@@ -38,7 +40,7 @@ void Descompacta(char *nomeArq)
 void Decodifica(Dec *dados)
 {
     char byte;
-    for(int i = 0; i < dados->qtd; i++)
+    for (int i = 0; i < dados->qtd; i++)
     {
         byte = arvGetChar(dados->arv, dados->bc);
         fwrite(&byte, 1, 1, dados->desc);

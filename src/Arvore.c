@@ -7,10 +7,10 @@
 
 struct arvore
 {
-    char c;
-    int peso;
-    Arv *esq;
-    Arv *dir;
+    char c;   // byte armazenado
+    int peso; // quantidade de vezes que o byte aparece
+    Arv *esq; // ponteiro para nó à esquerda
+    Arv *dir; // ponteiro para nó à direita
 };
 
 char arvGetChar(Arv *arv, BitComp *bc)
@@ -130,15 +130,11 @@ int arvCompara(void *x, void *y)
 void arvImprime(void *a)
 {
     Arv *arv = (Arv *)a;
-    //printf("<");
-    static int i = 0;
 
     if (!arvVazia(arv))
     {
         if (arv->esq == NULL && arv->dir == NULL)
         {
-            i++;
-            //printf("%c i:%d", arv->c, i);
             printf("1%c", arv->c);
         }
         else
@@ -148,8 +144,6 @@ void arvImprime(void *a)
         arvImprime(arv->esq);
         arvImprime(arv->dir);
     }
-
-    //printf(">");
 }
 
 void arvSerializa(bitmap *bm, Arv *arv)
