@@ -67,7 +67,6 @@ tList *ListaArvores(Cod *dados)
 
     //pra cada posição do vetor que for maior que 0
     //aloca uma arvore e chama addOrdered
-
     for (int i = 0; i < 256; i++)
     {
         if (dados->pesos[i] > 0)
