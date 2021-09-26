@@ -46,7 +46,7 @@ tList *NewList(int DataSize, fptrGeneric Destroy);
  * @brief Libera a lista inteira alocada.
  * @param *list Lista generica.
  * @pre Lista deve estar alocada.
- * @post Lista toda liberada liberada.
+ * @post Lista toda liberada.
 */
 void DestroyList(tList *list);
 
@@ -67,6 +67,16 @@ void addBase(tList *list, void *data);
  * @post Lista com o ponteiro alocado inserido no final, usuario deve se encarregar de liberar o anterior.
 */
 void addEnd(tList *list, void *data);
+
+/**
+ * @brief Adiciona um novo ponteiro na lista osdenado de acordo com a função passada.
+ * @param *list Lista generica.
+ * @param *data Ponteiro a ser inserido na lista.
+ * @param function Função para comparar os dados da lista e o novo a ser inserido, ela deve retornar 1 caso o dados deva ser inserido naquel lugar.
+ * @pre A lista passada tem que ser valida, é verificado dentro da função.
+ * @post Lista com o novo dados inserido ordenado de acordo com a função.
+*/
+void AddOrdered(tList *list, void *data, fptrCompare function);
 
 /**
  * @brief Remove e libera o primeiro ponteiro da lista.
@@ -151,6 +161,5 @@ void *SearchRemoveList(tList *list, void *find, fptrCompare function);
 */
 void Check(void *x);
 
-void AddOrdered(tList *list, void *data, fptrCompare function);
 
 #endif //LISTA_H

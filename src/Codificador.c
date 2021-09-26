@@ -16,6 +16,108 @@ struct codificador
     bitmap *mapa;
 };
 
+void Compacta(char *nomeArq)
+{
+    Cod *dados = malloc(sizeof(Cod));
+
+    DefinePesos(nomeArq, dados);
+
+    tList *listaArv = ListaArvores(dados);
+
+    AlgoritimoHuffman(listaArv, dados);
+    //arvImprime(dados->arvore);
+    DestroyList(listaArv);
+
+    DefineCaminhos(dados);
+
+    printf("tam bits arq: %d\n", tamBitsArquivo(dados));
+
+    EscreveCompactado(dados, nomeArq);
+
+    destroyCod(dados);
+}
+
+void DefinePesos(char *nomeArq, Cod *dados)
+{
+    FILE *arq = fopen(nomeArq, "rb");
+    if (!arq)
+    {
+        printf("Arquivo %s não aberto\n", nomeArq);
+        exit(1);
+    }
+
+    dados->pesos = calloc(sizeof(int), 256);
+    unsigned char byte;
+    unsigned int aux = 0;
+
+    while (fread(&byte, 1, 1, arq) >= 1)
+    {
+        //printf("byte: %u\n", aux);
+        dados->pesos[byte]++;
+        aux++;
+    }
+    dados->qtdBytes = aux;
+
+    fclose(arq);
+}
+
+tList *ListaArvores(Cod *dados)
+{
+    tList *listaArv = arvInitList();
+
+    //pra cada posição do vetor que for maior que 0
+    //aloca uma arvore e chama addOrdered
+
+    for (int i = 0; i < 256; i++)
+    {
+        if (dados->pesos[i] > 0)
+        {
+            Arv *arvore = arvCria(i, dados->pesos[i], NULL, NULL);
+            AddOrdered(listaArv, arvore, arvCompara);
+            free(arvore);
+        }
+    }
+    return listaArv;
+}
+
+void AlgoritimoHuffman(tList *listaArv, Cod *dados)
+{
+    Arv *arv1, *arv2, *aux;
+
+    while (1)
+    {
+        arv1 = removeReturnBase(listaArv);
+        arv2 = removeReturnBase(listaArv);
+        if (arvVazia(arv2))
+        {
+            break;
+        }
+
+        aux = arvCria(1, arvSomaPesos(arv1, arv2), arv1, arv2);
+        AddOrdered(listaArv, aux, arvCompara);
+        free(aux);
+    }
+
+    dados->arvore = arv1;
+}
+
+void DefineCaminhos(Cod *dados)
+{
+    dados->caminhos = malloc(sizeof(char *) * 256);
+
+    for (int i = 0; i < 256; i++)
+    {
+        if (dados->pesos[i] > 0)
+        {
+            dados->caminhos[i] = arvCaminho(dados->arvore, i, 0);
+        }
+        else
+        {
+            dados->caminhos[i] = NULL;
+        }
+    }
+}
+
 void destroyCod(Cod *dados)
 {
     if (dados)
@@ -52,162 +154,10 @@ int tamBitsArquivo(Cod *dados)
             tam += strlen(dados->caminhos[i]) * dados->pesos[i];
         }
     }
-    //soma 32 para o saber a quantidade de bytes do arquivo
-    //depois da serialização da arvore
+    //soma 32 para um interio com aquantidade de bytes do arquivo depois da serialização da arvore
     tam += arvQtdBits(dados->arvore) + 32;
 
     return tam;
-}
-
-void Compacta(char *nomeArq)
-{
-    Cod *dados = malloc(sizeof(Cod));
-
-    DefinePesos(nomeArq, dados);
-
-    tList *listaArv = ListaArvores(dados->pesos);
-
-    dados->arvore = AlgoritimoHuffman(listaArv);
-    DestroyList(listaArv);
-
-    DefineCaminhos(dados);
-    // int j = 0;
-    // for (int i = 0; i < 256; i++)
-    // {
-    //     if(dados->pesos[i] > 0){
-    //         printf("byte %d: %d tam: %ld\n", i, dados->pesos[i], strlen(dados->caminhos[i]));
-    //         j += dados->pesos[i];
-    //     }
-    // }
-    // printf("total: %d bin %x\n",j, j);
-
-    printf("tam bits arq: %d\n", tamBitsArquivo(dados));
-
-    //dados->mapa = bitmapInit(tamBitsArquivo(dados));
-
-    //EscreveBitmapCompactado(dados, nomeArq);
-
-    EscreveCompactado(dados, nomeArq);
-
-    //printf("tamMax: %d, usado: %d\n", bitmapGetMaxSize(dados->mapa), bitmapGetLength(dados->mapa));
-
-    destroyCod(dados);
-}
-
-void DefinePesos(char *nomeArq, Cod *dados)
-{
-    FILE *arq = fopen(nomeArq, "rb");
-    if (!arq)
-    {
-        printf("Arquivo %s não aberto\n", nomeArq);
-        exit(1);
-    }
-
-    dados->pesos = calloc(sizeof(int), 256);
-    unsigned char byte;
-    unsigned int aux = 0;
-
-    while (fread(&byte, 1, 1, arq) >= 1)
-    {
-        //printf("byte: %u\n", aux);
-        dados->pesos[byte]++;
-        aux++;
-    }
-    dados->qtdBytes = aux;
-
-    fclose(arq);
-}
-
-tList *ListaArvores(int *pesos)
-{
-    tList *listaArv = arvInitList();
-
-    //pra cada posição do vetor que for maior que 0
-    //aloca uma arvore e chama addOrdered
-
-    for (int i = 0; i < 256; i++)
-    {
-        if (pesos[i] > 0)
-        {
-            Arv *arvore = arvCria(i, pesos[i], NULL, NULL);
-            AddOrdered(listaArv, arvore, arvCompara);
-            free(arvore);
-        }
-    }
-    return listaArv;
-}
-
-Arv *AlgoritimoHuffman(tList *listaArv)
-{
-    Arv *arv1, *arv2, *aux;
-
-    while (1)
-    {
-        arv1 = removeReturnBase(listaArv);
-        arv2 = removeReturnBase(listaArv);
-        if (arvVazia(arv2))
-        {
-            break;
-        }
-
-        aux = arvCria(1, arvSomaPesos(arv1, arv2), arv1, arv2);
-        AddOrdered(listaArv, aux, arvCompara);
-        free(aux);
-    }
-
-    return arv1;
-}
-
-void DefineCaminhos(Cod *dados)
-{
-    dados->caminhos = malloc(sizeof(char *) * 256);
-
-    for (int i = 0; i < 256; i++)
-    {
-        if (dados->pesos[i] > 0)
-        {
-            dados->caminhos[i] = arvCaminho(dados->arvore, i, 0);
-        }
-        else
-        {
-            dados->caminhos[i] = NULL;
-        }
-    }
-}
-
-void setCaminhoMapa(Cod *dados, int byte)
-{
-    if (dados->caminhos[byte] == NULL)
-    {
-        printf("nao tem caminho para o byte %c\n", byte);
-        return;
-    }
-    char *caminho = dados->caminhos[byte];
-    for (int i = 0; caminho[i] != '\0'; i++)
-    {
-        bitmapAppendLeastSignificantBit(dados->mapa, caminho[i]);
-    }
-}
-
-void EscreveBitmapCompactado(Cod *dados, char *nomeArq)
-{
-    FILE *arq = fopen(nomeArq, "rb");
-    if (!arq)
-    {
-        printf("Arquivo %s não aberto\n", nomeArq);
-        exit(1);
-    }
-
-    arvSerializa(dados->mapa, dados->arvore);
-    //colocar o qtdbytes
-
-    unsigned char byte;
-    while (fread(&byte, 1, 1, arq) >= 1)
-    {
-        setCaminhoMapa(dados, byte);
-    }
-
-    fclose(arq);
 }
 
 void EscreveCompactadoarq(Cod *dados, char *nomeArq)
@@ -254,7 +204,12 @@ void EscreveCompactado(Cod *dados, char *nomeArq){
     //1.048.576 = 1 megabytes
     //8.388.608 = bits em 1 megabytes
     int i;
-    dados->mapa = bitmapInit(MEGABYTE << 3);
+    if(tamBytesTotal > MEGABYTE){
+        dados->mapa = bitmapInit(MEGABYTE << 3);
+    }
+    else{
+        dados->mapa = bitmapInit(tamBitsTotal);
+    }
     arvSerializa(dados->mapa, dados->arvore);
     for(i = 31; i >= 0; i--){
         bitmapAppendLeastSignificantBit(dados->mapa, dados->qtdBytes >> i);
