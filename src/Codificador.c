@@ -25,7 +25,6 @@ void Compacta(char *nomeArq)
     tList *listaArv = ListaArvores(dados);
 
     AlgoritimoHuffman(listaArv, dados);
-    //arvImprime(dados->arvore);
     DestroyList(listaArv);
 
     DefineCaminhos(dados);

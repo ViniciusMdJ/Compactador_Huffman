@@ -104,7 +104,7 @@ void *removeReturnBase(tList *list);
 void RemoveEnd(tList *list);
 
 /**
- * @brief Função que passa por toda a lista passando o ponteiro da informação da célula pra função passada.
+ * @brief Função que percorre por toda a lista passando o ponteiro da informação da célula pra função.
  * @param *list Lista generica.
  * @param genericFunction Função generica que manipula o ponterio do dado.
  * @pre A lista e a função passada tem que ser valida, é verificado dentro da função.
