@@ -70,11 +70,11 @@ static void destroyCod(Cod *dados);
 static int tamBitsArquivo(Cod *dados);
 
 /**
- * @brief 
- * @param 
- * @pre 
- * @post 
- * @return 
+ * @brief Faz a compactação do arquivo e coloca noarquivo compactado.
+ * @param *dados Struct com os dados para compactar o arquivo.
+ * @param *nomeArq O nome do arquivo a ser compactado.
+ * @pre Os caminhos e pesos devem estar definidos e o arquivo deve existir, dever do usuario.
+ * @post O arquivo com a extenção '.copm' criado com a compactação.
 */
 static void EscreveCompactado(Cod *dados, char *nomeArq);
 

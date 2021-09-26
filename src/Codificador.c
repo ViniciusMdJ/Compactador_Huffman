@@ -30,7 +30,7 @@ void Compacta(char *nomeArq)
 
     DefineCaminhos(dados);
 
-    printf("tam bits arq: %d\n", tamBitsArquivo(dados));
+    //printf("tam bits arq: %d\n", tamBitsArquivo(dados));
 
     EscreveCompactado(dados, nomeArq);
 
@@ -158,26 +158,6 @@ int tamBitsArquivo(Cod *dados)
     tam += arvQtdBits(dados->arvore) + 32;
 
     return tam;
-}
-
-void EscreveCompactadoarq(Cod *dados, char *nomeArq)
-{
-    char *compactado = malloc(sizeof(char) * (strlen(nomeArq) + 6));
-    //copia o nome do arquivo e concatena o .comp
-    strcpy(compactado, nomeArq);
-    strcat(compactado, ".comp");
-    FILE *arq = fopen(compactado, "wb");
-    if (!arq)
-    {
-        printf("Arquivo %s nao aberto\n", compactado);
-        exit(1);
-    }
-    //pega o tamanho em bytes do bitmap
-    int tam = (bitmapGetLength(dados->mapa) + 7) / 8;
-    fwrite(bitmapGetContents(dados->mapa), 1, tam, arq);
-
-    fclose(arq);
-    free(compactado);
 }
 
 void EscreveCompactado(Cod *dados, char *nomeArq){
