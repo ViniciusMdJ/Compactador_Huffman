@@ -44,7 +44,7 @@ unsigned char getByteArq(BitComp *bc)
 
 int getBitArq(BitComp *bc)
 {
-    int bit = (bc->byte & (0x01 << bc->index));
+    int bit = ((bc->byte & (0x01 << bc->index)) ? 1 : 0);
     bc->index--;
     if (bc->index < 0)
     {
