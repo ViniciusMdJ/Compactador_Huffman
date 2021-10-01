@@ -17,14 +17,20 @@ void Descompacta(char *nomeArq)
 {
     Dec *dados = malloc(sizeof(Dec));
     dados->bc = InitBitComp(nomeArq);
-    dados->arv = arvDesserializa(dados->bc);
-    //arvImprime(dados->arv);
     dados->qtd = 0;
     for (int i = 0; i < 4; i++)
     {
         dados->qtd <<= 8;
         dados->qtd += getByteArq(dados->bc);
     }
+    if(dados->qtd == 0){
+        printf("Arquivo vazio\n");
+        DestroyBitComp(dados->bc);
+        free(dados);
+        exit(1);
+    }
+    dados->arv = arvDesserializa(dados->bc);
+    //arvImprime(dados->arv);
     //retira o ".comp" do nome do arquivo
     nomeArq[strlen(nomeArq) - 5] = '\0';
     dados->desc = fopen(nomeArq, "wb");

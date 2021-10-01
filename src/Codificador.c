@@ -51,7 +51,7 @@ void DefinePesos(char *nomeArq, Cod *dados)
 
     while (fread(&byte, 1, 1, arq) >= 1)
     {
-        //printf("byte: %u\n", aux);
+        //printf("byte: %u\n", byte);
         dados->pesos[byte]++;
         aux++;
     }
@@ -188,10 +188,10 @@ void EscreveCompactado(Cod *dados, char *nomeArq){
     else{
         dados->mapa = bitmapInit(tamBitsTotal);
     }
-    arvSerializa(dados->mapa, dados->arvore);
     for(i = 31; i >= 0; i--){
         bitmapAppendLeastSignificantBit(dados->mapa, dados->qtdBytes >> i);
     }
+    arvSerializa(dados->mapa, dados->arvore);
 
     char *caminhoAtual;
     int tamCaminho = 0, bitcaminho = 0;
