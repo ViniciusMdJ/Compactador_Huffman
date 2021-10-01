@@ -5,6 +5,12 @@
 typedef struct decodificador Dec;
 
 /**
+ * @brief Inicializa o struct Dec.
+ * @return Retorna o ponteiro do struct alocado.
+*/
+static Dec *InitDec();
+
+/**
  * @brief Descompacta um arquivo .comp.
  * @param nomeArq String do nome do arquivo.
  * @pre nomeArq tem o caminho correto para o arquivo.

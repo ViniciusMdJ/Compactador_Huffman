@@ -13,23 +13,27 @@ struct decodificador
     unsigned int qtd; // Quantidade de bytes à ser escrita.
 };
 
+static Dec *InitDec(){
+    Dec *dados = malloc(sizeof(Dec));
+    dados->arv = NULL;
+    dados->bc = NULL;
+    dados->desc = NULL;
+    dados->qtd = 0;
+    return dados;
+};
+
 void Descompacta(char *nomeArq)
 {
-    Dec *dados = malloc(sizeof(Dec));
+    Dec *dados = InitDec();
     dados->bc = InitBitComp(nomeArq);
-    dados->qtd = 0;
     for (int i = 0; i < 4; i++)
     {
         dados->qtd <<= 8;
         dados->qtd += getByteArq(dados->bc);
     }
-    if(dados->qtd == 0){
-        printf("Arquivo vazio\n");
-        DestroyBitComp(dados->bc);
-        free(dados);
-        exit(1);
+    if(dados->qtd > 0){
+        dados->arv = arvDesserializa(dados->bc);
     }
-    dados->arv = arvDesserializa(dados->bc);
     //arvImprime(dados->arv);
     //retira o ".comp" do nome do arquivo
     nomeArq[strlen(nomeArq) - 5] = '\0';
